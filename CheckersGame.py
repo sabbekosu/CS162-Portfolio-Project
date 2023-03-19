@@ -1,6 +1,6 @@
 # Author: Kevin Sabbe
 # GitHub username: sabbekosu
-# Date: 3/8/2023
+# Date: 3/19/2023
 # Description: A Checkers game playable by two players
 class InvalidMoveError(Exception):
     """
@@ -23,134 +23,130 @@ class GameOverError(Exception):
 
 
 class Checker:
-    """
-    A class to represent a checker piece on the board.
+    def __init__(self, color):
+        self.is_captured = None
+        self.is_triple_king = None
+        self.color = color
+        self.is_king = False
 
-    Responsibilities:
-    - Store information about the piece, including its color and position.
-    - Be able to move the piece.
-    - Determine if the piece is eligible for promotion to king or triple king.
-
-    Communicates with:
-    - Board: to determine if a move is valid and to update its position on the board.
-    """
-
-    def __init__(self, color, position):
-        """
-        Initialize the Checker object.
-
-        Parameters:
-        - color (str): the color of the checker, either "black" or "white".
-        - position (tuple): the (x, y) position of the checker on the board.
-        """
-        pass
-
-    def move(self, new_position):
-        """
-        Move the checker to a new position.
-
-        Parameters:
-        - new_position (tuple): the (x, y) position to move the checker to.
-        """
-        pass
-
-    def is_eligible_for_promotion(self):
-        """
-        Check if the checker is eligible for promotion to king or triple king.
-
-        Returns:
-        - bool: True if the checker is eligible for promotion, False otherwise.
-        """
-        pass
-
-
-class Board:
-    """
-    A class to represent the game board.
-
-    Responsibilities:
-    - Store information about the pieces on the board.
-    - Determine if a move is valid.
-    - Update the board after a move.
-    - Print the board.
-
-    Communicates with:
-    - Checker: to determine if a move is valid and to update the positions of the checkers.
-    """
-
-    def __init__(self):
-        """
-        Initialize the Board object.
-        """
-        pass
-
-    def is_valid_move(self, current_position, new_position):
-        """
-        Check if a move is valid.
-
-        Parameters:
-        - current_position (tuple): the (x, y) position of the checker to move.
-        - new_position (tuple): the (x, y) position to move the checker to.
-
-        Returns:
-        - bool: True if the move is valid, False otherwise.
-        """
-        pass
-
-    def update_board(self, current_position, new_position):
-        """
-        Update the board after a move.
-
-        Parameters:
-        - current_position (tuple): the (x, y) position of the checker to move.
-        - new_position (tuple): the (x, y) position to move the checker to.
-        """
-        pass
-
-    def print_board(self):
-        """
-        Print the current state of the board.
-        """
-        pass
+    def __repr__(self):
+        if self.is_captured:
+            return "X"
+        else:
+            color_str = "W" \
+                if self.color == "white" else "B"
+            king_str = "K" \
+                if self.is_king else ""
+            triple_king_str = "3K" \
+                if self.is_triple_king else ""
+            return f"{color_str}{king_str}{triple_king_str}"
 
 
 class Player:
-    """
-    A class to represent a player in the game.
-
-    Responsibilities:
-    - Store information about the player, including their name and color.
-    - Create checkers for the player.
-    - Determine the next move.
-
-    Communicates with:
-    - Checker: to create checkers for the player.
-    - Board: to determine if a move is valid.
-    """
-
     def __init__(self, name, color):
-        """
-        Initialize the Player object.
+        self.name = name
+        self.color = color
+        self.checkers = []
+        self.king_count = 0
+        self.triple_king_count = 0
+        self.captured_pieces_count = 0
 
-        Parameters:
-        - name (str): the name of the player.
-        - color (str): the color of the player's checkers, either "black" or "white".
-        """
-        pass
+    def get_king_count(self):
+        return self.king_count
 
-    def create_checkers(self):
-        """
-        Create checkers for the player.
-        """
-        pass
+    def get_triple_king_count(self):
+        return self.triple_king_count
 
-    def get_next_move(self, board):
-        """
-        Determine the next move for the player.
+    def get_captured_pieces_count(self):
+        return self.captured_pieces_count
 
-        Parameters:
-        - board (Board): the current state of the board.
 
-        Returns:
-        - tuple: the (current_position, new_position) tuple representing the move to
-        """
+class Checkers:
+    def __init__(self):
+        self.board = [
+            [None, Checker("black"), None, Checker("black"), None, Checker("black"), None, Checker("black")],
+            [Checker("black"), None, Checker("black"), None, Checker("black"), None, Checker("black"), None],
+            [None, Checker("black"), None, Checker("black"), None, Checker("black"), None, Checker("black")],
+            [None, None, None, None, None, None, None, None],
+            [None, None, None, None, None, None, None, None],
+            [Checker("white"), None, Checker("white"), None, Checker("white"), None, Checker("white"), None],
+            [None, Checker("white"), None, Checker("white"), None, Checker("white"), None, Checker("white")],
+            [Checker("white"), None, Checker("white"), None, Checker("white"), None, Checker("white"), None],
+        ]
+        self.players = {"white": None, "black": None}
+        self.current_player = None
+
+    def create_player(self, name, color):
+        if color != "white" and color != "black":
+            raise ValueError("Invalid player color")
+
+        if self.players[color]:
+            raise ValueError("Player color already taken")
+
+        player = Player(name, color)
+        self.players[color] = player
+
+        return player
+
+    def print_board(self):
+        for row in self.board:
+            print(row)
+
+    def get_checker_details(self, row, col):
+        checker = self.board[row][col]
+        if not checker:
+            return None
+
+        return {"color": checker.color, "is_king": checker.is_king}
+
+    def game_winner(self):
+        white_checkers = 0
+        black_checkers = 0
+
+        for row in self.board:
+            for checker in row:
+                if checker and checker.color == "white":
+                    white_checkers += 1
+                elif checker and checker.color == "black":
+                    black_checkers += 1
+
+        if white_checkers == 0 and black_checkers > 0:
+            return "black"
+        elif black_checkers == 0 and white_checkers > 0:
+            return "white"
+        else:
+            return None
+
+    def is_valid_move(self, from_row, from_col, to_row, to_col):
+        if not self.board[from_row][from_col]:
+            return False
+
+        if self.board[to_row][to_col]:
+            return False
+
+        if self.board[from_row][from_col].color == "white":
+            if to_row >= from_row:
+                return False
+        else:
+            if to_row <= from_row:
+                return False
+
+        row_diff = abs(from_row - to_row)
+        col_diff = abs(from_col - to_col)
+
+        if row_diff != col_diff:
+            return False
+
+        if row_diff == 1:
+            return True
+
+        mid_row = (from_row + to_row) // 2
+        mid_col = (from_col + to_col) // 2
+
+        if not self.board[mid_row][mid_col]:
+            return False
+
+        if self.board[mid_row][mid_col].color == self.board[from_row][from_col].color:
+            return False
+
+        return True
