@@ -2,7 +2,7 @@
 # GitHub username: sabbekosu
 # Date: 3/19/2023
 # Description: A Checkers game playable by two players
-class OutOfTurn(Exception):
+class OutofTurn(Exception):
     pass
 
 
@@ -111,7 +111,7 @@ class Checkers:
             raise InvalidPlayer("Invalid player_name.")
 
         if player != self.current_player:
-            raise OutOfTurn("It is not this player's turn.")
+            raise OutofTurn("It is not this player's turn.")
 
         start_x, start_y = starting_square_location
         end_x, end_y = destination_square_location
