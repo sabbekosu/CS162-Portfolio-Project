@@ -89,6 +89,7 @@ class Checkers:
         else:
             self.current_player = self.players[0]
 
+
     def play_game(self, player_name, start, end):
         # Find the player
         player = None
