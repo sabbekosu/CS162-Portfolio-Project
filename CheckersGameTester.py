@@ -5,58 +5,67 @@
 import unittest
 from CheckersGame import Checkers, Player, Checker
 
+import unittest
+from CheckersGame import Checkers, Checker, Player, InvalidPlayer, OutOfTurn, InvalidSquare
 
-class TestCheckers(unittest.TestCase):
+
+class TestCheckersGame(unittest.TestCase):
 
     def test_create_player(self):
-        checkers = Checkers()
-        player1 = checkers.create_player("Alice", "white")
-        player2 = checkers.create_player("Bob", "black")
-
-        self.assertIsInstance(player1, Player)
-        self.assertEqual(player1.name, "Alice")
-        self.assertEqual(player1.color, "white")
-        self.assertIsInstance(player2, Player)
-        self.assertEqual(player2.name, "Bob")
-        self.assertEqual(player2.color, "black")
-
-    def test_game_winner(self):
-        checkers = Checkers()
-        winner = checkers.game_winner()
-        self.assertIsNone(winner)
-
-        # Black wins by eliminating all of white's checkers
-        for row in range(8):
-            for col in range(8):
-                if isinstance(checkers.board[row][col], Checker) and checkers.board[row][col].color == "white":
-                    checkers.board[row][col] = None
-        checkers.print_board()
-        winner = checkers.game_winner()
-        self.assertEqual(winner, "black")
-
-    def test_print_board(self):
         game = Checkers()
-        game.print_board()
+        player1 = game.create_player("Alice", "White")
+        self.assertIsInstance(player1, Player)
+        self.assertEqual(player1.player_name, "Alice")
+        self.assertEqual(player1.piece_color, "White")
+
+    def test_create_player_invalid_color(self):
+        game = Checkers()
+        with self.assertRaises(ValueError):
+            game.create_player("Alice", "InvalidColor")
+
+    def test_play_game_out_of_turn(self):
+        game = Checkers()
+        player1 = game.create_player("Alice", "White")
+        player2 = game.create_player("Bob", "Black")
+
+        with self.assertRaises(OutOfTurn):
+            game.play_game("Bob", (5, 6), (4, 7))
+
+    def test_play_game_invalid_player(self):
+        game = Checkers()
+        player1 = game.create_player("Alice", "White")
+
+        with self.assertRaises(InvalidPlayer):
+            game.play_game("InvalidPlayer", (2, 1), (3, 0))
+
+    def test_play_game_invalid_move(self):
+        game = Checkers()
+        player1 = game.create_player("Alice", "White")
+
+        with self.assertRaises(InvalidSquare):
+            game.play_game("Alice", (2, 1), (4, 1))
 
     def test_get_checker_details(self):
         game = Checkers()
-        details = game.get_checker_details(0, 1)
-        self.assertEqual(details["color"], "black")
-        self.assertFalse(details["is_king"])
-        details = game.get_checker_details(5, 0)
-        self.assertEqual(details["color"], "white")
-        self.assertFalse(details["is_king"])
+        player1 = game.create_player("Alice", "White")
+        player2 = game.create_player("Bob", "Black")
+        game.print_board()
+        self.assertEqual(game.get_checker_details((1, 0)), "White")
+        self.assertEqual(game.get_checker_details((0, 0)), None)
+        self.assertEqual(game.get_checker_details((6, 5)), "Black")
 
-    def test_player_methods(self):
+    def test_get_checker_details_invalid_square(self):
         game = Checkers()
-        player1 = game.create_player("Alice", "white")
-        player2 = game.create_player("Bob", "black")
-        self.assertEqual(player1.get_king_count(), 0)
-        self.assertEqual(player1.get_triple_king_count(), 0)
-        self.assertEqual(player1.get_captured_pieces_count(), 0)
-        self.assertEqual(player2.get_king_count(), 0)
-        self.assertEqual(player2.get_triple_king_count(), 0)
-        self.assertEqual(player2.get_captured_pieces_count(), 0)
+
+        with self.assertRaises(InvalidSquare):
+            game.get_checker_details((8, 0))
+
+    def test_game_winner(self):
+        game = Checkers()
+        player1 = game.create_player("Alice", "White")
+        player2 = game.create_player("Bob", "Black")
+
+        self.assertEqual(game.game_winner(), "Game has not ended")
 
 
 if __name__ == '__main__':
