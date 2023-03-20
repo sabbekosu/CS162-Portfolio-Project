@@ -83,17 +83,17 @@ class TestCheckersGame(unittest.TestCase):
         player2 = self.game.create_player("Bob", "Black")
 
         # Move a white piece to allow black's turn
-        self.game.play_game(player1, (6, 1), (5, 0))  # Correct starting position for a white piece
+        self.game.play_game("Alice", (6, 1), (5, 0))  # Correct starting position for a white piece
 
         initial_black_piece = self.game.board[0][5]
-        self.assertEqual(player2, initial_black_piece.color)
+        self.assertEqual("Black", initial_black_piece.color)
 
         # Move the black piece to an empty space
-        self.game.play_game(player1, (0, 5), (1, 4))
+        self.game.play_game("Bob", (0, 5), (1, 4))
 
         # Check if the black piece has moved to the new position
         moved_black_piece = self.game.board[1][4]
-        self.assertEqual(player2, moved_black_piece.color)
+        self.assertEqual("Black", moved_black_piece.color)
 
         # Check if the initial position is now empty
         empty_initial_position = self.game.board[0][5]

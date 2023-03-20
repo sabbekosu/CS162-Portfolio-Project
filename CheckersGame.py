@@ -46,6 +46,9 @@ class Player:
     def get_king_count(self):
         return self.king_count
 
+    def color(self):
+        return self.piece_color
+
     def get_triple_king_count(self):
         return self.triple_king_count
 
@@ -89,9 +92,16 @@ class Checkers:
         else:
             self.current_player = self.players[0]
 
-    def play_game(self, play, start, end):
+    def play_game(self, player_name, start, end):
         # Find the player
-        player = play
+        player = None
+        for p in self.players:
+            if p.player_name == player_name:
+                player = p
+                break
+
+        if not player:
+            raise InvalidPlayer(f"Invalid player: {player_name}")
 
         # Check if it's the player's turn
         if player.piece_color != self.turn:
