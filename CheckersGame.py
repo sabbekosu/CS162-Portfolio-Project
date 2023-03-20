@@ -60,7 +60,7 @@ class Checkers:
     def __init__(self):
         self.board = self._init_board()
         self.players = []
-        self.turn = "White"
+        self.turn = "Black"
         self.current_player = None
 
     def _init_board(self):
