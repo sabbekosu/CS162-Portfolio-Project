@@ -63,13 +63,13 @@ class Checkers:
     def _init_board(self):
         board = [[None] * 8 for _ in range(8)]
 
-        for x in range(8):
-            for y in range(8):
+        for y in range(8):
+            for x in range(8):
                 if (x + y) % 2 == 1:
                     if y < 3:
-                        board[x][y] = Checker("White")
+                        board[y][x] = Checker("White")
                     elif y > 4:
-                        board[x][y] = Checker("Black")
+                        board[y][x] = Checker("Black")
 
         return board
 
@@ -89,17 +89,9 @@ class Checkers:
         else:
             self.current_player = self.players[0]
 
-
-    def play_game(self, player_name, start, end):
+    def play_game(self, play, start, end):
         # Find the player
-        player = None
-        for p in self.players:
-            if p.player_name == player_name:
-                player = p
-                break
-
-        if not player:
-            raise InvalidPlayer(f"Invalid player: {player_name}")
+        player = play
 
         # Check if it's the player's turn
         if player.piece_color != self.turn:
@@ -144,7 +136,7 @@ class Checkers:
         if x < 0 or x >= 8 or y < 0 or y >= 8:
             raise InvalidSquare("Invalid square location.")
 
-        checker = self.board[x][y]
+        checker = self.board[y][x]  # Change the order of the indices
         return None if not checker else checker.__repr__()
 
     def print_board(self):
@@ -164,8 +156,8 @@ class Checkers:
         if not (0 <= end_x < 8 and 0 <= end_y < 8):
             raise InvalidSquare(f"Invalid destination square: {end}")
 
-        start_piece = self.board[start_x][start_y]
-        end_piece = self.board[end_x][end_y]
+        start_piece = self.board[start_y][start_x]
+        end_piece = self.board[end_y][end_x]
 
         # Check if the piece in the starting square belongs to the player
         if not start_piece or start_piece.color != piece_color:
@@ -222,14 +214,15 @@ class Checkers:
             raise InvalidSquare(f"Invalid move: {start} to {end}")
 
             # Update the piece rank if it reaches the opponent's side or returns to its original side
-        if end_piece.rank != "triple_king":
-            if piece_color == "White" and end_y == 7:
-                end_piece.rank = "king"
-            elif piece_color == "Black" and end_y == 0:
-                end_piece.rank = "king"
-            elif end_piece.rank == "king" and (
-                    (piece_color == "White" and end_y == 0) or (piece_color == "Black" and end_y == 7)):
-                end_piece.rank = "triple_king"
+        if start_piece.rank != "triple_king":
+            if piece_color == "White" and end_y == 0:
+                self.board[end_x][end_y].rank = "king"
+            elif piece_color == "Black" and end_y == 7:
+                self.board[end_x][end_y].rank = "king"
+            elif piece_color == "White" and start_piece.rank == "king" and end_y == 7:
+                self.board[end_x][end_y].rank = "triple_king"
+            elif piece_color == "Black" and start_piece.rank == "king" and end_y == 0:
+                self.board[end_x][end_y].rank = "triple_king"
 
         return captured_pieces
 

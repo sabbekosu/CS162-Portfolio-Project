@@ -11,6 +11,9 @@ from CheckersGame import Checkers, Checker, Player, InvalidPlayer, OutofTurn, In
 
 class TestCheckersGame(unittest.TestCase):
 
+    def setUp(self):
+        self.game = Checkers()
+
     def test_create_player(self):
         game = Checkers()
         player1 = game.create_player("Alice", "White")
@@ -66,6 +69,51 @@ class TestCheckersGame(unittest.TestCase):
         player2 = game.create_player("Bob", "Black")
 
         self.assertEqual(game.game_winner(), "Game has not ended")
+
+    def test_white_piece_makes_a_regular_move_no_pieces_captured(self):
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        self.game.play_game("Alice", (1, 0), (0, 1))
+        self.assertEqual(self.game.get_checker_details((1, 0)), None)
+        self.assertEqual(self.game.get_checker_details((0, 1)), "White")
+
+    def test_black_piece_makes_a_regular_move_no_pieces_captured(self):
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        # Move a white piece to allow black's turn
+        self.game.play_game(player1, (6, 1), (5, 0))  # Correct starting position for a white piece
+
+        initial_black_piece = self.game.board[0][5]
+        self.assertEqual(player2, initial_black_piece.color)
+
+        # Move the black piece to an empty space
+        self.game.play_game(player1, (0, 5), (1, 4))
+
+        # Check if the black piece has moved to the new position
+        moved_black_piece = self.game.board[1][4]
+        self.assertEqual(player2, moved_black_piece.color)
+
+        # Check if the initial position is now empty
+        empty_initial_position = self.game.board[0][5]
+        self.assertIsNone(empty_initial_position)
+
+    def test_white_captures(self):
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        # Move a white piece
+        self.game.play_game("Alice", (1, 0), (0, 1))
+
+        # Move a black piece
+        self.game.play_game("Bob", (6, 1), (5, 0))
+
+        # Move the white piece to capture the black piece
+        self.game.play_game("Alice", (0, 1), (2, 3))
+        self.assertEqual(self.game.get_checker_details((0, 1)), None)
+        self.assertEqual(self.game.get_checker_details((1, 2)), None)
+        self.assertEqual(self.game.get_checker_details((2, 3)), "White")
 
 
 if __name__ == '__main__':
