@@ -80,6 +80,10 @@ class Checkers:
 
         return board
 
+    def print_board(self):
+        for row in self.board:
+            print(row)
+
     def create_player(self, player_name, piece_color):
         if piece_color not in ["Black", "White"]:
             raise ValueError("Invalid piece_color. Must be 'Black' or 'White'.")
@@ -145,17 +149,14 @@ class Checkers:
 
         return True
 
-    def get_checker_details(self, square_location):
-        x, y = square_location
+    def get_checker_details(self, x, y):
+        x = x
+        y = y
         if x < 0 or x >= 8 or y < 0 or y >= 8:
             raise InvalidSquare("Invalid square location.")
 
-        checker = self.board[y][x]  # Change the order of the indices
+        checker = self.board[x][y]  # Change the order of the indices
         return None if not checker else checker.__repr__()
-
-    def print_board(self):
-        for row in self.board:
-            print(row)
 
     def _move_piece(self, piece_color, start, end):
         start_x, start_y = start
@@ -170,8 +171,8 @@ class Checkers:
         if not (0 <= end_x < 8 and 0 <= end_y < 8):
             raise InvalidSquare(f"Invalid destination square: {end}")
 
-        start_piece = self.board[start_y][start_x]
-        end_piece = self.board[end_y][end_x]
+        start_piece = self.board[start_x][start_y]
+        end_piece = self.board[end_x][end_y]
 
         # Check if the piece in the starting square belongs to the player
         if not start_piece or start_piece.color != piece_color:
@@ -179,7 +180,7 @@ class Checkers:
 
         # Check if the destination square is empty
         if end_piece is not None:
-            raise InvalidSquare(f"Invalid destination square: {end}")
+            raise InvalidSquare(f"Invalid destination square: {end_piece}")
 
         captured_pieces = 0
         # Calculate the absolute difference between the starting and destination squares
