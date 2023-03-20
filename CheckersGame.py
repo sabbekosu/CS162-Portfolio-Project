@@ -122,7 +122,8 @@ class Checkers:
         player.captured_pieces_count += captured_pieces
 
         # Switch the turn to the other player
-        self._switch_current_player()
+        if captured_pieces == 0:
+            self._switch_current_player()
 
         return captured_pieces
 
