@@ -6,7 +6,7 @@ import unittest
 from CheckersGame import Checkers, Player, Checker
 
 import unittest
-from CheckersGame import Checkers, Checker, Player, InvalidPlayer, OutOfTurn, InvalidSquare
+from CheckersGame import Checkers, Checker, Player, InvalidPlayer, OutofTurn, InvalidSquare
 
 
 class TestCheckersGame(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestCheckersGame(unittest.TestCase):
         player1 = game.create_player("Alice", "White")
         player2 = game.create_player("Bob", "Black")
 
-        with self.assertRaises(OutOfTurn):
+        with self.assertRaises(OutofTurn):
             game.play_game("Bob", (5, 6), (4, 7))
 
     def test_play_game_invalid_player(self):

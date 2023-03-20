@@ -15,18 +15,24 @@ class InvalidPlayer(Exception):
 
 
 class Checker:
-    def __init__(self, color, is_king=False, is_triple_king=False):
+    def __init__(self, color, rank="regular"):
         self.color = color
-        self.is_king = is_king
-        self.is_triple_king = is_triple_king
+        self.rank = rank
+
+    def __str__(self):
+        if self.rank == "regular":
+            return self.color
+        else:
+            return f"{self.color}_{self.rank}"
 
     def __repr__(self):
-        if self.is_triple_king:
-            return f"{self.color}_Triple_King"
-        elif self.is_king:
-            return f"{self.color}_king"
-        else:
-            return self.color
+        return str(self)
+
+    def is_king(self):
+        return self.rank == "king"
+
+    def is_triple_king(self):
+        return self.rank == "triple_king"
 
 
 class Player:
@@ -51,6 +57,7 @@ class Checkers:
     def __init__(self):
         self.board = self._init_board()
         self.players = []
+        self.turn = "White"
         self.current_player = None
 
     def _init_board(self):
@@ -105,34 +112,31 @@ class Checkers:
 
         return True
 
-    def play_game(self, player_name, starting_square_location, destination_square_location):
-        player = next((p for p in self.players if p.player_name == player_name), None)
-        if not player:
-            raise InvalidPlayer("Invalid player_name.")
+    def play_game(self, player_name, start, end):
+        # Find the player
+        player = None
+        for p in self.players:
+            if p.player_name == player_name:
+                player = p
+                break
 
-        if player != self.current_player:
+        if not player:
+            raise InvalidPlayer(f"Invalid player: {player_name}")
+
+        # Check if it's the player's turn
+        if player.piece_color != self.turn:
             raise OutofTurn("It is not this player's turn.")
 
-        start_x, start_y = starting_square_location
-        end_x, end_y = destination_square_location
-        checker = self.board[start_x][start_y]
+        # Move the piece and get the number of captured pieces
+        captured_pieces = self._move_piece(player.piece_color, start, end)
 
-        if not checker or checker.color != player.piece_color:
-            raise InvalidSquare("Invalid starting square location.")
+        # Update the player's captured_pieces_count
+        player.captured_pieces_count += captured_pieces
 
-        if not self._is_valid_move(starting_square_location, destination_square_location, checker):
-            raise InvalidSquare("Invalid destination square location.")
+        # Switch the turn to the other player
+        self.turn = "Black" if self.turn == "White" else "White"
 
-        self.board[end_x][end_y] = self.board[start_x][start_y]
-        self.board[start_x][start_y] = None
-
-        if (checker.color == "White" and end_x == 7) or (checker.color == "Black" and end_x == 0):
-            if checker.is_king:
-                checker.is_triple_king = True
-            else:
-                checker.is_king = True
-
-        self._switch_current_player()
+        return captured_pieces
 
     def get_checker_details(self, square_location):
         x, y = square_location
@@ -145,6 +149,88 @@ class Checkers:
     def print_board(self):
         for row in self.board:
             print(row)
+
+    def _move_piece(self, piece_color, start, end):
+        start_x, start_y = start
+        end_x, end_y = end
+        dx, dy = end_x - start_x, end_y - start_y
+
+        # Check if the starting square is valid
+        if not (0 <= start_x < 8 and 0 <= start_y < 8):
+            raise InvalidSquare(f"Invalid starting square: {start}")
+
+        # Check if the destination square is valid
+        if not (0 <= end_x < 8 and 0 <= end_y < 8):
+            raise InvalidSquare(f"Invalid destination square: {end}")
+
+        start_piece = self.board[start_x][start_y]
+        end_piece = self.board[end_x][end_y]
+
+        # Check if the piece in the starting square belongs to the player
+        if not start_piece or start_piece.color != piece_color:
+            raise InvalidSquare(f"Invalid starting square: {start}")
+
+        # Check if the destination square is empty
+        if end_piece is not None:
+            raise InvalidSquare(f"Invalid destination square: {end}")
+
+        captured_pieces = 0
+        # Calculate the absolute difference between the starting and destination squares
+        abs_dx, abs_dy = abs(dx), abs(dy)
+
+        is_king_or_triple_king = start_piece.rank in {"king", "triple_king"}
+
+        if is_king_or_triple_king or (abs_dx == 1 and abs_dy == 1):
+            # Regular move
+            self.board[end_x][end_y] = self.board[start_x][start_y]
+            self.board[start_x][start_y] = None
+        elif abs_dx == 2 and abs_dy == 2:
+            # Capture move
+            middle_x, middle_y = (start_x + end_x) // 2, (start_y + end_y) // 2
+            middle_piece = self.board[middle_x][middle_y]
+            if middle_piece and middle_piece.color != piece_color:
+                self.board[end_x][end_y] = self.board[start_x][start_y]
+                self.board[start_x][start_y] = None
+                self.board[middle_x][middle_y] = None
+                captured_pieces = 1
+            else:
+                raise InvalidSquare(f"Invalid move: {start} to {end}")
+        elif is_king_or_triple_king and abs_dx == abs_dy:
+            # Diagonal move for a king or triple king
+            step_x, step_y = dx // abs_dx, dy // abs_dy
+            current_x, current_y = start_x + step_x, start_y + step_y
+            while current_x != end_x and current_y != end_y:
+                current_piece = self.board[current_x][current_y]
+                if current_piece:
+                    if current_piece.color == piece_color:
+                        raise InvalidSquare(f"Invalid move: {start} to {end}")
+                    elif not captured_pieces:
+                        captured_pieces = 1
+                    else:
+                        raise InvalidSquare(f"Invalid move: {start} to {end}")
+                current_x += step_x
+                current_y += step_y
+
+            if captured_pieces:
+                self.board[end_x][end_y] = self.board[start_x][start_y]
+                self.board[start_x][start_y] = None
+                self.board[current_x - step_x][current_y - step_y] = None
+            else:
+                raise InvalidSquare(f"Invalid move: {start} to {end}")
+        else:
+            raise InvalidSquare(f"Invalid move: {start} to {end}")
+
+            # Update the piece rank if it reaches the opponent's side or returns to its original side
+        if end_piece.rank != "triple_king":
+            if piece_color == "White" and end_y == 7:
+                end_piece.rank = "king"
+            elif piece_color == "Black" and end_y == 0:
+                end_piece.rank = "king"
+            elif end_piece.rank == "king" and (
+                    (piece_color == "White" and end_y == 0) or (piece_color == "Black" and end_y == 7)):
+                end_piece.rank = "triple_king"
+
+        return captured_pieces
 
     def _has_valid_moves(self, player_color):
         for start_x in range(8):
