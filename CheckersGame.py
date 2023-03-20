@@ -64,15 +64,19 @@ class Checkers:
         self.current_player = None
 
     def _init_board(self):
-        board = [[None] * 8 for _ in range(8)]
+        board = [[None for _ in range(8)] for _ in range(8)]
 
-        for y in range(8):
-            for x in range(8):
-                if (x + y) % 2 == 1:
-                    if y < 3:
-                        board[y][x] = Checker("White")
-                    elif y > 4:
-                        board[y][x] = Checker("Black")
+        # Place the white pieces at the top
+        for i in range(8):
+            for j in range(3):
+                if (i + j) % 2 == 1:
+                    board[j][i] = Checker("White")
+
+        # Place the black pieces at the bottom
+        for i in range(8):
+            for j in range(5, 8):
+                if (i + j) % 2 == 1:
+                    board[j][i] = Checker("Black")
 
         return board
 
