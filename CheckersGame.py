@@ -89,29 +89,6 @@ class Checkers:
         else:
             self.current_player = self.players[0]
 
-    def _is_valid_move(self, start, end, checker):
-        start_x, start_y = start
-        end_x, end_y = end
-        dx = end_x - start_x
-        dy = end_y - start_y
-
-        if checker.color == "White":
-            direction = 1
-        else:
-            direction = -1
-
-        if checker.is_king or checker.is_triple_king:
-            if abs(dx) != abs(dy) or dx * direction < 0:
-                return False
-        else:
-            if dx != direction or abs(dy) != 1:
-                return False
-
-        if self.board[end_x][end_y]:
-            return False
-
-        return True
-
     def play_game(self, player_name, start, end):
         # Find the player
         player = None
@@ -137,6 +114,29 @@ class Checkers:
         self.turn = "Black" if self.turn == "White" else "White"
 
         return captured_pieces
+
+    def _is_valid_move(self, start, end, checker):
+        start_x, start_y = start
+        end_x, end_y = end
+        dx = end_x - start_x
+        dy = end_y - start_y
+
+        if checker.color == "White":
+            direction = 1
+        else:
+            direction = -1
+
+        if checker.is_king or checker.is_triple_king:
+            if abs(dx) != abs(dy) or dx * direction < 0:
+                return False
+        else:
+            if dx != direction or abs(dy) != 1:
+                return False
+
+        if self.board[end_x][end_y]:
+            return False
+
+        return True
 
     def get_checker_details(self, square_location):
         x, y = square_location
