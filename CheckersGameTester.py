@@ -37,7 +37,60 @@ class TestCheckersGame(unittest.TestCase):
         empty_initial_position = self.game.board[5][6]
         self.assertIsNone(empty_initial_position)
 
+    def test_invalid_player(self):
+        # Try to move with an invalid player name
+        with self.assertRaises(InvalidPlayer):
+            self.game.play_game("Charlie", (2, 1), (3, 2))
 
+    def test_out_of_turn(self):
+        # Create two players
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        # Move a white piece, which is not allowed because it is Black's turn
+        with self.assertRaises(OutofTurn):
+            self.game.play_game("Alice", (2, 1), (3, 2))
+
+    def test_invalid_square(self):
+        # Create two players
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        # Try to move a white piece to an invalid square
+        with self.assertRaises(InvalidSquare):
+            self.game.play_game("Alice", (2, 1), (9, 2))
+
+        # Try to move a black piece to an invalid square
+        with self.assertRaises(InvalidSquare):
+            self.game.play_game("Bob", (7, 0), (8, 0))
+
+    def test_king_piece_moves_two_squares_diagonal(self):
+        # Create two players
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        # Move a white king piece two squares diagonally
+        self.game.play_game("Alice", (5, 0), (3, 2))
+
+        # Check if the white king piece has moved to the new position
+        moved_white_king = self.game.board[3][2]
+        self.assertEqual("White_king", moved_white_king.__str__())
+
+        # Check if the initial position is now empty
+        empty_initial_position = self.game.board[5][0]
+        self.assertIsNone(empty_initial_position)
+
+    def test_create_player_invalid_piece_color(self):
+        game = Checkers()
+        with self.assertRaises(ValueError):
+            game.create_player("Alice", "Red")
+
+    def test_move_piece_invalid_start_square(self):
+        player1 = self.game.create_player("Alice", "White")
+        player2 = self.game.create_player("Bob", "Black")
+
+        with self.assertRaises(InvalidSquare):
+            self.game.play_game("Bob", (8, 0), (6, 2))
 
 if __name__ == '__main__':
     unittest.main()
