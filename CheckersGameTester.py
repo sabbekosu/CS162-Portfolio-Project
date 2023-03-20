@@ -40,7 +40,7 @@ class TestCheckersGame(unittest.TestCase):
     def test_invalid_player(self):
         # Try to move with an invalid player name
         with self.assertRaises(InvalidPlayer):
-            self.game.play_game("Charlie", (2, 1), (3, 2))
+            self.game.play_game("Kevin", (2, 1), (3, 2))
 
     def test_out_of_turn(self):
         # Create two players
